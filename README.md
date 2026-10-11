@@ -1,3 +1,70 @@
+<div align="center">
+
+# Snapline Windows 中文版
+
+**把截图和文件，像晾衣服一样挂在桌面顶部。**
+
+Windows 10 / 11 · 简体中文 · x64 · 免安装便携版
+
+[下载 Windows 中文版](https://github.com/Ayao-zhang/Snapline-Windows-CN/releases/latest) · [中文使用说明](README.zh-CN.md) · [查看更新](https://github.com/Ayao-zhang/Snapline-Windows-CN/releases)
+
+</div>
+
+## 这是什么？
+
+Snapline Windows 中文版是一个常驻桌面的截图与文件暂存工具。
+
+截图、复制文件后，它们会像卡片一样挂在屏幕顶部，需要时点击复制、打开、定位或拖拽使用；用完后再取下，不打扰桌面工作。
+
+## 核心功能
+
+| 功能 | 说明 |
+|:--|:--|
+| 截图上绳 | 支持系统截图、微信截图、`Win + Shift + S`、`PrtScn` |
+| 文件上绳 | 在资源管理器复制文件，自动生成文件卡片 |
+| 快速取用 | 点击复制，右键打开或定位，拖拽到其他应用 |
+| 截图标注 | 支持画笔、荧光笔、箭头、文字、模糊和撤销 |
+| OCR 识别 | 从截图中复制文字，使用 Windows 本地 OCR |
+| 中文界面 | 简体中文菜单、设置和操作提示 |
+| 本地运行 | 不登录、不上传截图和文件 |
+
+## Windows 下载
+
+### 便携版（推荐试用）
+
+点击进入 [Releases 最新版本](https://github.com/Ayao-zhang/Snapline-Windows-CN/releases/latest)，下载：
+
+`Snapline-1.6.2-zh-portable.exe`
+
+双击即可运行，不需要安装。首次运行后，程序会出现在 Windows 通知区域。
+
+## 30 秒开始使用
+
+1. 使用微信截图或 Windows 截图工具完成截图，截图会自动挂到顶部绳子上。
+2. 点击截图卡片即可复制截图。
+3. 在资源管理器中复制任意文件，文件会生成卡片并挂到绳子上。
+4. 点击文件卡片可复制原文件；也可以右键打开、定位，或拖到其他应用。
+5. 右键卡片可以选择“保留”“取下”“保存到桌面”等操作。
+
+> 文件卡片只是原文件的快捷入口。取下卡片不会删除原文件。
+
+## 数据与安全
+
+- 原文件不会被移动或覆盖。
+- 文件卡片移除时，只清理 Snapline 生成的预览图。
+- 截图和文件不会上传到网络。
+- 设置、截图和卡片预览默认位于 `%LOCALAPPDATA%\\Snapline`。
+
+## 项目来源
+
+本项目基于 [Snapline](https://github.com/mohabujubara/snapline) 的 Windows 版本进行中文本地化和功能增强，最初设计源自 [Tendedero](https://github.com/alejandrobujan/tendedero)。
+
+详细中文说明请查看 [README.zh-CN.md](README.zh-CN.md)。
+
+---
+
+## English
+
 <p align="center">
   <img src="docs/icon.png" width="96" height="96" alt="">
 </p>
