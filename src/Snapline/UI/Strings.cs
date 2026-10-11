@@ -5,14 +5,14 @@ using Snapline.Core;
 namespace Snapline.UI;
 
 /// <summary>
-/// Every word the app shows, in English and Arabic. The language follows
+/// Every word the app shows, in English, Arabic and Simplified Chinese. The language follows
 /// Windows unless chosen in Settings.
 /// </summary>
 public static class Strings
 {
     public static event Action? LanguageChanged;
 
-    /// <summary>"en" or "ar".</summary>
+    /// <summary>"en", "ar" or "zh".</summary>
     public static string Language { get; private set; } = Resolve();
 
     public static bool IsRtl => Language == "ar";
@@ -28,11 +28,16 @@ public static class Strings
     private static string Resolve()
     {
         var chosen = Core.Settings.Current.Language;
-        if (chosen is "en" or "ar") return chosen;
+        if (chosen is "en" or "ar" or "zh") return chosen;
         return CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar" ? "ar" : "en";
     }
 
-    private static string L(string en) => Language == "ar" && Ar.TryGetValue(en, out var ar) ? ar : en;
+    private static string L(string en) => Language switch
+    {
+        "ar" when Ar.TryGetValue(en, out var ar) => ar,
+        "zh" when Zh.TryGetValue(en, out var zh) => zh,
+        _ => en,
+    };
 
     public const string AppName = "Snapline";
     public static string Tagline => L("Screenshots, hung out to dry.");
@@ -247,5 +252,52 @@ public static class Strings
         ["Blue"] = "أزرق", ["Green"] = "أخضر", ["Gold"] = "ذهبي", ["Pink"] = "وردي", ["Purple"] = "بنفسجي",
         ["Wooden"] = "خشبي", ["Aluminium"] = "ألومنيوم", ["Coloured plastic, mixed"] = "بلاستيك ملوّن متنوّع",
         ["Red plastic"] = "بلاستيك أحمر", ["Blue plastic"] = "بلاستيك أزرق", ["Green plastic"] = "بلاستيك أخضر", ["Yellow plastic"] = "بلاستيك أصفر",
+    };
+
+    private static readonly Dictionary<string, string> Zh = new()
+    {
+        ["Screenshots, hung out to dry."] = "截图，晾在这里。",
+        ["Show line"] = "显示晾衣绳", ["Hide line"] = "隐藏晾衣绳",
+        ["Take everything down"] = "取下全部截图", ["New capture"] = "新建截图",
+        ["Click to take a new screenshot (Win+Shift+S)"] = "点击进行新的截图（Win+Shift+S）",
+        ["Catch clipboard captures"] = "捕获剪贴板截图",
+        ["Win+Shift+S and PrtScn captures hang even when no file is saved"] = "即使没有保存文件，Win+Shift+S 和 PrtScn 截图也会挂在这里",
+        ["Stay down until each capture is used"] = "每张截图被使用前保持展开",
+        ["The line waits while a capture has not been copied, dragged or opened"] = "只要截图还没有被复制、拖拽或打开，晾衣绳就会保持展开",
+        ["Take down after dragging into an app"] = "拖入应用后取下截图",
+        ["A photo dropped into a chat or an app leaves the line, like one saved to a folder"] = "图片拖入聊天窗口或应用后会从晾衣绳上取下，就像保存到文件夹一样",
+        ["Bring the line down when the pointer rests at the top edge"] = "鼠标停在屏幕顶边时显示晾衣绳",
+        ["Hold the pointer still against the top of the screen for half a second. Off, the shortcut and the tray icon show the line."] = "将鼠标停在屏幕顶边半秒。关闭后，可通过快捷键或托盘图标显示晾衣绳。",
+        ["Open Screenshots folder"] = "打开截图文件夹", ["Open caught captures folder"] = "打开捕获截图文件夹",
+        ["Caught captures need a folder of their own, because discarding one sends it to the Recycle Bin. Pick a folder that is not your Desktop, Pictures, Screenshots or a watched folder, and not a parent of them."] = "捕获的截图需要单独的文件夹，因为丢弃它们会移入回收站。请选择一个不是桌面、图片、截图文件夹或受监控文件夹，也不是它们上级目录的文件夹。",
+        ["Sounds"] = "声音", ["Start with Windows"] = "随 Windows 启动", ["Settings…"] = "设置…",
+        ["About Snapline"] = "关于 Snapline", ["Quit Snapline"] = "退出 Snapline",
+        ["Copy"] = "复制", ["Copy text"] = "复制文字", ["Open"] = "打开", ["Edit"] = "编辑",
+        ["Mark up"] = "标注", ["Edit in Paint"] = "用画图编辑", ["Pen"] = "画笔", ["Highlighter"] = "荧光笔",
+        ["Circle"] = "圆形", ["Box"] = "矩形", ["Arrow"] = "箭头", ["Text"] = "文字", ["Blur"] = "模糊",
+        ["New note"] = "新建便签", ["Menu"] = "菜单", ["Edit note"] = "编辑便签", ["Note colour"] = "便签颜色",
+        ["Write a note…"] = "写下便签…", ["Yellow"] = "黄色", ["Pink"] = "粉色", ["Blue"] = "蓝色", ["Green"] = "绿色", ["Orange"] = "橙色",
+        ["Colour"] = "颜色", ["Thickness"] = "粗细", ["Undo"] = "撤销", ["Redo"] = "重做", ["Revert to original"] = "恢复原图",
+        ["Done"] = "完成", ["Saved"] = "已保存", ["Back to the original"] = "已恢复原图", ["Could not save"] = "无法保存",
+        ["Show in Explorer"] = "在文件资源管理器中显示", ["Keep on the line"] = "保留在晾衣绳上",
+        ["Save to Desktop"] = "保存到桌面", ["Save to Pictures\\Screenshots"] = "保存到图片\\截图",
+        ["Discard"] = "丢弃", ["Take down"] = "取下", ["Move to Recycle Bin"] = "移入回收站",
+        ["Take a screenshot and it will hang here"] = "截一张图，它就会挂在这里", ["Copied"] = "已复制", ["Text copied"] = "文字已复制",
+        ["just now"] = "刚刚", ["{0} min ago"] = "{0} 分钟前", ["{0} h ago"] = "{0} 小时前",
+        ["Settings"] = "设置", ["The line"] = "晾衣绳", ["Look"] = "外观", ["Captures"] = "截图", ["General"] = "常规",
+        ["Show or hide the line"] = "显示或隐藏晾衣绳", ["Click here and press the keys you want, like Ctrl+Alt+T"] = "点击此处并按下想要的快捷键，例如 Ctrl+Alt+T",
+        ["Distance from the top of the screen"] = "距离屏幕顶部", ["You can also drag the line itself up or down"] = "也可以直接上下拖动晾衣绳",
+        ["Line colour"] = "晾衣绳颜色", ["Clothespins"] = "夹子", ["Bows at the ends of the line"] = "晾衣绳两端的蝴蝶结",
+        ["Arrange photos evenly along the line"] = "沿晾衣绳均匀排列图片", ["Off, each photo stays where you put it"] = "关闭后，每张图片会留在你放置的位置",
+        ["Appearance"] = "显示模式", ["Language"] = "语言", ["Follow Windows"] = "跟随 Windows", ["Light"] = "浅色", ["Dark"] = "深色",
+        ["Caught captures are saved to"] = "捕获的截图保存到", ["Change…"] = "更改…", ["Folders watched for new screenshots"] = "监控新截图的文件夹",
+        ["Add folder…"] = "添加文件夹…", ["Remove"] = "移除", ["Changes apply right away. Everything lives in {0}."] = "更改会立即生效。所有内容位于 {0}。",
+        ["Snapline is on the line"] = "Snapline 已准备就绪", ["Take a screenshot and it hangs at the top of the screen. Rest the pointer against the top edge to bring the line down, or press {0}."] = "截一张图，它会挂在屏幕顶部。将鼠标停在顶边，或按下 {0}，即可显示晾衣绳。",
+        ["Click a photo to copy it. Press and hold to edit it. Double click to open it.\nDrag it along the line to reorder, into an app to send a copy, into a folder to keep it, or to the Recycle Bin to let it go.\nRest the pointer against the top edge of the screen, or press {0}, to bring the line down."] =
+            "点击图片即可复制。长按可以编辑，双击可以打开。\n沿晾衣绳拖动可以重新排序；拖入应用可发送副本；拖入文件夹可保存；拖入回收站可丢弃。\n将鼠标停在屏幕顶边，或按下 {0}，即可显示晾衣绳。",
+        ["Bronze"] = "青铜色", ["Gray"] = "灰色", ["Black"] = "黑色", ["White"] = "白色", ["Red"] = "红色",
+        ["Gold"] = "金色", ["Purple"] = "紫色", ["Wooden"] = "木质", ["Aluminium"] = "铝制",
+        ["Coloured plastic, mixed"] = "混色塑料", ["Red plastic"] = "红色塑料", ["Blue plastic"] = "蓝色塑料",
+        ["Green plastic"] = "绿色塑料", ["Yellow plastic"] = "黄色塑料",
     };
 }

@@ -90,9 +90,11 @@ public sealed class Settings
     public Dictionary<string, double> Spots { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     /// <summary>Sticky notes hanging on the line, by the path of the picture each is drawn into.</summary>
     public Dictionary<string, NoteData> Notes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>File cards hanging on the line, mapping their preview to the untouched source file.</summary>
+    public Dictionary<string, string> FileCards { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     /// <summary>auto, light or dark.</summary>
     public string Appearance { get; set; } = "auto";
-    /// <summary>auto, en or ar.</summary>
+    /// <summary>auto, en, zh or ar.</summary>
     public string Language { get; set; } = "auto";
     public bool Welcomed { get; set; }
     public string HotKey { get; set; } = "Ctrl+Alt+T";
@@ -113,6 +115,7 @@ public sealed class Settings
                 // Paths are matched regardless of case; the deserializer forgets that.
                 loaded.Spots = new Dictionary<string, double>(loaded.Spots, StringComparer.OrdinalIgnoreCase);
                 loaded.Notes = new Dictionary<string, NoteData>(loaded.Notes, StringComparer.OrdinalIgnoreCase);
+                loaded.FileCards = new Dictionary<string, string>(loaded.FileCards, StringComparer.OrdinalIgnoreCase);
                 return loaded;
             }
         }

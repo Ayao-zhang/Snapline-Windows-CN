@@ -282,7 +282,7 @@ public sealed class PeggedControl : Canvas
 
     private void RefreshTip()
     {
-        _tipName.Text = System.IO.Path.GetFileName(Item.Path);
+        _tipName.Text = System.IO.Path.GetFileName(_line.SourcePath(Item.Id));
         _tipMeta.Text = $"{Item.PixelWidth} × {Item.PixelHeight}  ·  {Age(Item.HungAt)}{(Item.Pinned ? "  ·  " + Strings.KeepOnLine : "")}";
     }
 
@@ -524,6 +524,7 @@ public sealed class PeggedControl : Canvas
         menu.Closed += (_, _) => _line.MenuOpen = false;
         bool inInbox = _line.IsInInbox(id);
         bool isNote = _line.IsNote(id);
+        bool isFileCard = _line.IsFileCard(id);
         menu.Items.Add(MenuItemFor(Strings.Copy, () => _line.Copy(id)));
         if (isNote)
         {
@@ -538,7 +539,7 @@ public sealed class PeggedControl : Canvas
             }
             menu.Items.Add(colours);
         }
-        else
+        else if (!isFileCard)
         {
             menu.Items.Add(MenuItemFor(Strings.Open, () => _line.Open(id)));
             menu.Items.Add(MenuItemFor(Strings.MarkUp, () => _line.Edit(id)));
@@ -562,7 +563,7 @@ public sealed class PeggedControl : Canvas
         else
         {
             menu.Items.Add(MenuItemFor(Strings.TakeDown, () => _line.Discard(id)));
-            menu.Items.Add(MenuItemFor(Strings.MoveToRecycleBin, () => _line.Trash(id)));
+            if (!isFileCard) menu.Items.Add(MenuItemFor(Strings.MoveToRecycleBin, () => _line.Trash(id)));
         }
         return menu;
     }
@@ -592,7 +593,7 @@ public sealed class PeggedControl : Canvas
         uint effect = DragSource.DROPEFFECT_NONE;
         try
         {
-            effect = DragSource.Drag(Item.Path, image, grab);
+            effect = DragSource.Drag(_line.SourcePath(Item.Id), image, grab);
         }
         catch (Exception ex)
         {
@@ -614,7 +615,7 @@ public sealed class PeggedControl : Canvas
         // answers "move" after merely reading the file costs nothing.
 
         // Dropped into an app and sent on its way: with the option on, it leaves the line too.
-        if (accepted && Settings.Current.TakeDownAfterDrag && System.IO.File.Exists(Item.Path))
+        if (accepted && Settings.Current.TakeDownAfterDrag && System.IO.File.Exists(_line.SourcePath(Item.Id)))
         {
             var id = Item.Id;
             var t = new DispatcherTimer { Interval = TimeSpan.FromSeconds(0.35) };

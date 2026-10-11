@@ -116,6 +116,15 @@ public sealed class Line
         return item.Id;
     }
 
+    public Guid? HangFile(string sourcePath)
+    {
+        var preview = FileCards.Create(sourcePath);
+        if (preview is null) return null;
+        var id = Hang(preview, quietly: true);
+        if (id is null) FileCards.Forget(preview);
+        return id;
+    }
+
     /// <summary>The capture has reached the line: the real card takes over.</summary>
     public void Land(Guid id)
     {
@@ -132,6 +141,7 @@ public sealed class Line
         Fall?.Invoke(item);
         item.Falling = true;
         Originals.Forget(item.Path);
+        FileCards.Forget(item.Path);
         Save();
         ItemsChanged?.Invoke();
         if (!quietly) Sounds.PlayPop();
@@ -179,9 +189,10 @@ public sealed class Line
     /// <summary>Photos whose file was deleted or moved away fall off by themselves.</summary>
     public void Prune()
     {
-        foreach (var item in _items.Where(i => !i.Falling && !File.Exists(i.Path)).ToList())
+        foreach (var item in _items.Where(i => !i.Falling && !File.Exists(FileCards.Source(i.Path) ?? i.Path)).ToList())
         {
             Notes.Forget(item.Path);
+            FileCards.Forget(item.Path);
             Drop(item.Id, quietly: true);
         }
     }
@@ -197,6 +208,14 @@ public sealed class Line
         try
         {
             var data = new DataObject();
+            if (FileCards.Source(item.Path) is { } source)
+            {
+                data.SetFileDropList(new System.Collections.Specialized.StringCollection { source });
+                Clipboard.SetDataObject(data, true);
+                CopiedId = id;
+                Later(1.2, () => { if (CopiedId == id) CopiedId = null; });
+                return;
+            }
             var png = Thumbnails.PngBytes(item.Path);
             if (png is not null)
             {
@@ -223,7 +242,7 @@ public sealed class Line
         var item = Find(id);
         if (item is null) return;
         item.Used = true;
-        if (!Shell.Open(item.Path)) System.Media.SystemSounds.Beep.Play();
+        if (!Shell.Open(FileCards.Source(item.Path) ?? item.Path)) System.Media.SystemSounds.Beep.Play();
     }
 
     /// <summary>A new sticky note hangs on the line, ready to be written on.</summary>
@@ -236,6 +255,8 @@ public sealed class Line
     }
 
     public bool IsNote(Guid id) => Find(id) is { } item && Notes.IsNote(item.Path);
+    public bool IsFileCard(Guid id) => Find(id) is { } item && FileCards.Is(item.Path);
+    public string SourcePath(Guid id) => Find(id) is { } item ? FileCards.Source(item.Path) ?? item.Path : "";
 
     public void EditNote(Guid id)
     {
@@ -258,6 +279,7 @@ public sealed class Line
     {
         var item = Find(id);
         if (item is null) return;
+        if (FileCards.Is(item.Path)) return;
         item.Used = true;
         if (Notes.IsNote(item.Path)) UI.NoteWindow.Show(item.Path, this);
         else UI.MarkupWindow.Show(item.Path, this);
@@ -268,8 +290,9 @@ public sealed class Line
     {
         var item = Find(id);
         if (item is null) return;
+        if (FileCards.Is(item.Path)) return;
         item.Used = true;
-        if (!Shell.Edit(item.Path)) System.Media.SystemSounds.Beep.Play();
+        if (!Shell.Edit(FileCards.Source(item.Path) ?? item.Path)) System.Media.SystemSounds.Beep.Play();
     }
 
     /// <summary>Copies a file by path, the same way a click on its card would.</summary>
@@ -284,6 +307,7 @@ public sealed class Line
     {
         var item = Find(id);
         if (item is null) return;
+        if (FileCards.Is(item.Path)) { Drop(id); return; }
         if (File.Exists(item.Path) && !Shell.Recycle(item.Path))
         {
             Log.Error($"Could not recycle {item.Path}");
@@ -300,7 +324,7 @@ public sealed class Line
     public bool IsInInbox(Guid id)
     {
         var item = Find(id);
-        return item is not null && Inbox.Contains(item.Path);
+        return item is not null && !FileCards.Is(item.Path) && Inbox.Contains(item.Path);
     }
 
     /// <summary>The corner cross and "Take down" both end up here.</summary>
@@ -349,7 +373,7 @@ public sealed class Line
     public void Reveal(Guid id)
     {
         var item = Find(id);
-        if (item is not null) Shell.ShowInExplorer(item.Path);
+        if (item is not null) Shell.ShowInExplorer(FileCards.Source(item.Path) ?? item.Path);
     }
 
     /// <summary>Keeps a photo on the line: newer captures never push it off.</summary>
@@ -367,6 +391,7 @@ public sealed class Line
     {
         var item = Find(id);
         if (item is null) return;
+        if (FileCards.Is(item.Path)) return;
         item.Used = true;
         string? text;
         try { text = await Ocr.ReadAsync(item.Path); }

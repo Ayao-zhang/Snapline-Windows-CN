@@ -8,6 +8,8 @@
   Screenshots, hung out to dry. For Windows 10 and 11, and for macOS.
   <br>
   Grew out of <a href="https://github.com/alejandrobujan/tendedero">Tendedero</a> for the Mac.
+  <br>
+  <a href="README.zh-CN.md">简体中文介绍 / Chinese README</a>
 </p>
 
 <br>

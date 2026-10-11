@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Snapline.Interop;
@@ -18,6 +19,7 @@ public sealed class ClipboardWatcher : IDisposable
     private readonly MessageWindow _window;
     private readonly Dispatcher _dispatcher;
     private readonly Action<string, int, int> _onCapture;
+    private readonly Action<string> _onFileCapture;
     private readonly Func<int, int, bool> _recentlyHungFromFile;
     private bool _listening;
     private uint _lastSequence;
@@ -25,12 +27,13 @@ public sealed class ClipboardWatcher : IDisposable
     public bool Enabled { get; set; } = true;
 
     /// <param name="recentlyHungFromFile">Whether a file with these pixel dimensions just hung, so the clipboard copy of the same capture is skipped.</param>
-    public ClipboardWatcher(MessageWindow window, Action<string, int, int> onCapture, Func<int, int, bool> recentlyHungFromFile)
+    public ClipboardWatcher(MessageWindow window, Action<string, int, int> onCapture, Func<int, int, bool> recentlyHungFromFile, Action<string> onFileCapture)
     {
         _window = window;
         _dispatcher = Dispatcher.CurrentDispatcher;
         _onCapture = onCapture;
         _recentlyHungFromFile = recentlyHungFromFile;
+        _onFileCapture = onFileCapture;
         _window.Message += OnMessage;
     }
 
@@ -76,7 +79,13 @@ public sealed class ClipboardWatcher : IDisposable
             if (data is null) return;
             var formats = data.GetFormats(false);
             if (formats is null || formats.Length == 0) return;
-            if (!formats.Contains(DataFormats.Bitmap) && !formats.Contains(DataFormats.Dib) && !formats.Contains("PNG")) return;
+            bool hasImage = formats.Contains(DataFormats.Bitmap) || formats.Contains(DataFormats.Dib) || formats.Contains("PNG");
+            if (formats.Contains(DataFormats.FileDrop) && !hasImage && data.GetData(DataFormats.FileDrop) is string[] files)
+            {
+                foreach (var file in files.Where(File.Exists).Distinct(StringComparer.OrdinalIgnoreCase)) _onFileCapture(file);
+                return;
+            }
+            if (!hasImage) return;
             if (NotPureImage.Any(f => formats.Contains(f))) return;
 
             BitmapSource? image = null;
@@ -91,6 +100,12 @@ public sealed class ClipboardWatcher : IDisposable
             }
             image ??= Clipboard.GetImage();
             if (image is null || image.PixelWidth < 8 || image.PixelHeight < 8) return;
+            // Some apps, including WeChat, put a 24-bit DIB on the clipboard.
+            // WPF can expose it as BGRA with an empty alpha channel, so make
+            // clipboard screenshots opaque before saving them as PNG.
+            var opaque = new FormatConvertedBitmap(image, PixelFormats.Bgr32, null, 0);
+            opaque.Freeze();
+            image = opaque;
             if (_recentlyHungFromFile(image.PixelWidth, image.PixelHeight)) return;
 
             var path = Inbox.NewCapturePath();

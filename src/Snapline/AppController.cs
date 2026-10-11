@@ -72,7 +72,7 @@ public sealed class AppController : IDisposable
         _tray.LeftClick += Toggle;
         _panel.Canvas.MenuRequested += () => Menus.Show(BuildMenu());
 
-        _clipboard = new ClipboardWatcher(_messages, OnClipboardCapture, RecentlyHungFromFile)
+        _clipboard = new ClipboardWatcher(_messages, OnClipboardCapture, RecentlyHungFromFile, OnClipboardFile)
         {
             Enabled = Settings.Current.CatchClipboard,
         };
@@ -147,6 +147,11 @@ public sealed class AppController : IDisposable
     }
 
     private void OnClipboardCapture(string path, int w, int h) => HangCapture(path, fromFile: false);
+
+    private void OnClipboardFile(string path)
+    {
+        if (_line.HangFile(path) is not null) Refresh();
+    }
 
     // MARK: The capture flying to the line
 
